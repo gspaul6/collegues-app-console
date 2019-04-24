@@ -1,28 +1,74 @@
 var request = require('request');
 
 
-function rechercherColleguesParNom(nomRecherche, callback) {
+function rechercherColleguesParNom(nomRecherche, callbackOk, callbackNotOk) {
 
-    request('https://paul-collegues-api.herokuapp.com/collegues?nom=Marty', { json: true }, function(err, res, body) {
+    var collegue = [];
+    request('https://paul-collegues-api.herokuapp.com/collegues?nom=' + nomRecherche, { json: true }, function (err, res, body) {
 
-        
-        var tableauColleguesTrouves = body;
+        var tableauColleguesTrouvesParNom = body;
+        if (err) {
+            callbackNotOk.err("you have an error");
+        }
 
-        callback(tableauColleguesTrouves); // retour du résultat
+        collegue.push(body);
+
+
+        callback(collegue); // retour du résultat
     });
 
 }
+function rechercherColleguesParNom2(nomRecherche, callback, callbackErr) {
+    request(`https://paul-collegues-api.herokuapp.com/collegues?nom=${nomRecherche}`, {
+        json: true
+    }, (err, res, body) => {
+        if(err){callbackErr('error is there',err)}
+        var tabMatricules = body;
+        function trouverCollegues(tabMats, tabResultats) {
+            if (tabMats.length === 0) {
+                callback([]);
+            }
+            var matricule = tabMats.pop();
 
-function rechercherColleguesParNom(nomRecherche, callback) {
+            rechercherColleguesParMatricule(matricule, (collegueTrouve) => {
+                tabResultats.push(collegueTrouve);
+                if (tabMats.length > 0) {
+                    trouverCollegues(tabMats, tabResultats);
+                } else {
+                    callback(tabResultats);
+                }
+            });
 
-    request('https://paul-collegues-api.herokuapp.com/collegues/matricule', { json: true }, function(err, res, body) {
+        }
+        trouverCollegues(tabMatricules, []);
+    });
+}
 
-        
+
+
+function rechercherColleguesParMatricule(matriculeRecherche, callback) {
+
+    request(`https://paul-collegues-api.herokuapp.com/collegues/${matriculeRecherche}`, { json: true }, function (err, res, body) {
+
+
         var tableauColleguesTrouvesParMatricule = body;
 
         callback(tableauColleguesTrouvesParMatricule); // retour du résultat
     });
 
 }
+function addCollegues(addCollegues, callback) {
 
-exports.rechercherParNom=rechercherColleguesParNom();
+    request.post('https://paul-collegues-api.herokuapp.com/collegues/', { json: true }, { body: myJSONObject }, function (err, res, body) {
+
+
+        var tableauCollegues = res;
+
+        callback(tableauCollegues); // retour du résultat
+    });
+
+}
+
+exports.rechercherParNom2 = rechercherColleguesParNom2;
+exports.rechercherParMatricule = rechercherColleguesParMatricule;
+exports.addCollegues = addCollegues;
