@@ -3,15 +3,43 @@ var request = require('request');
 
 function rechercherColleguesParNom(nomRecherche, callbackOk, callbackNotOk) {
 
-    var collegue = [];
+
     request('https://paul-collegues-api.herokuapp.com/collegues?nom=' + nomRecherche, { json: true }, function (err, res, body) {
 
         var tableauColleguesTrouvesParNom = body;
         if (err) {
-            callbackNotOk.err("you have an error");
+            callbackNotOk("you have an error");
+        } else if (res.statusCode >= 400 && res.statusCode <= 499) {
+
+            callbackNotOK('Erreur dans les informations de la requête');
+
+        } else if (res.statusCode >= 500 && res.statusCode <= 599) {
+
+            callbackNotOK('Erreur côté serveur');
+
+        } else {
+            var tabMatricules = body;
+            var collegue = [];
+            var nbRequetesATraiter = tabMatricules.length;
+            tabMatricules.forEach(matricule => {
+                rechercherColleguesParMatricule(matricule, (collegueTrouve) => {
+                    nbRequetesATraiter--; // ?
+
+                    tableauCollegue.push(collegueTrouve);
+
+
+
+                    if (nbRequetesATraiter === 0) {
+
+                        callbackOK(tableauCollegue);
+
+                    }
+                })
+
+            });
         }
 
-        collegue.push(body);
+
 
 
         callback(collegue); // retour du résultat
@@ -22,7 +50,7 @@ function rechercherColleguesParNom2(nomRecherche, callback, callbackErr) {
     request(`https://paul-collegues-api.herokuapp.com/collegues?nom=${nomRecherche}`, {
         json: true
     }, (err, res, body) => {
-        if(err){callbackErr('error is there',err)}
+        if (err) { callbackErr('error is there', err) }
         var tabMatricules = body;
         function trouverCollegues(tabMats, tabResultats) {
             if (tabMats.length === 0) {
