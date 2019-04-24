@@ -50,7 +50,7 @@ function rechercherColleguesParNom2(nomRecherche, callback, callbackErr) {
     request(`https://paul-collegues-api.herokuapp.com/collegues?nom=${nomRecherche}`, {
         json: true
     }, (err, res, body) => {
-        if (err) { callbackErr('error is there', err) }
+        if (err) { callbackErr('error is there', err); }
         var tabMatricules = body;
         function trouverCollegues(tabMats, tabResultats) {
             if (tabMats.length === 0) {
@@ -85,15 +85,33 @@ function rechercherColleguesParMatricule(matriculeRecherche, callback) {
     });
 
 }
-function addCollegues(addCollegues, callback) {
+function addCollegues(myJSONObject) {
 
-    request.post('https://paul-collegues-api.herokuapp.com/collegues/', { json: true }, { body: myJSONObject }, function (err, res, body) {
+    request({
 
+        url: `https://paul-collegues-api.herokuapp.com/collegues`,
+    
+        method: 'POST',
+    
+        json: true,
+    
+        body: myJSONObject,
+    
+      },  function (err, res, body) {
 
-        var tableauCollegues = res;
-
-        callback(tableauCollegues); // retour du résultat
+        if (err) { console.log('error is there', err); }
+        console.info('POST result:\n', body);
+    
+       // callback(tableauCollegues); // retour du résultat
     });
+
+   // request.post({ uri: 'https://paul-collegues-api.herokuapp.com/collegues', body: myJSONObject, json: true }, function (err, res, body) {
+
+        //if (err) { console.log('error is there', err); }
+       // console.info('POST result:\n', body);
+    
+       // callback(tableauCollegues); // retour du résultat
+  //  });
 
 }
 
